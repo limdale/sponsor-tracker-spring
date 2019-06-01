@@ -14,7 +14,7 @@ import javax.persistence.*;
 @Table(name = "companies")
 public class Company {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @NonNull
     private String name;
@@ -23,6 +23,7 @@ public class Company {
     private String stateOrProvince;
     private String country;
     private String postalCode;
+    @Enumerated(EnumType.STRING)
     private SponsorshipWillingness willSponsor;
     private String notes;
     private int probationPeriod;
