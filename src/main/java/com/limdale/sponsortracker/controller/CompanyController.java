@@ -1,8 +1,8 @@
-package com.limdale.sponsorpls.controller;
+package com.limdale.sponsortracker.controller;
 
-import com.limdale.sponsorpls.exceptions.ResourceNotFoundException;
-import com.limdale.sponsorpls.model.Company;
-import com.limdale.sponsorpls.repository.CompanyRepository;
+import com.limdale.sponsortracker.exceptions.ResourceNotFoundException;
+import com.limdale.sponsortracker.model.Company;
+import com.limdale.sponsortracker.repository.CompanyRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

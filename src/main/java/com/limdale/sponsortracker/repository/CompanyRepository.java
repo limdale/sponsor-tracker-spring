@@ -1,6 +1,6 @@
-package com.limdale.sponsorpls.repository;
+package com.limdale.sponsortracker.repository;
 
-import com.limdale.sponsorpls.model.Company;
+import com.limdale.sponsortracker.model.Company;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

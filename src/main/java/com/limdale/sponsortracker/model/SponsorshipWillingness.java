@@ -1,4 +1,4 @@
-package com.limdale.sponsorpls.model;
+package com.limdale.sponsortracker.model;
 
 public enum SponsorshipWillingness {
     YES("yes"), NO("no"), MAYBE("maybe");

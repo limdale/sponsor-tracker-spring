@@ -1,4 +1,4 @@
-package com.limdale.sponsorpls;
+package com.limdale.sponsortracker;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -7,7 +7,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class SponsorPlsApplicationTests {
+public class SponsorTrackerApplicationTests {
 
 	@Test
 	public void contextLoads() {

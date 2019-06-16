@@ -1,4 +1,4 @@
-package com.limdale.sponsorpls.exceptions;
+package com.limdale.sponsortracker.exceptions;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;

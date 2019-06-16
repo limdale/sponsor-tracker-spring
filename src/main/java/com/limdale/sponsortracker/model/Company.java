@@ -1,4 +1,4 @@
-package com.limdale.sponsorpls.model;
+package com.limdale.sponsortracker.model;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;

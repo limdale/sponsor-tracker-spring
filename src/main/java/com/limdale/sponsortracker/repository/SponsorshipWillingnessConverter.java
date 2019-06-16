@@ -1,6 +1,6 @@
-package com.limdale.sponsorpls.repository;
+package com.limdale.sponsortracker.repository;
 
-import com.limdale.sponsorpls.model.SponsorshipWillingness;
+import com.limdale.sponsortracker.model.SponsorshipWillingness;
 
 import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;

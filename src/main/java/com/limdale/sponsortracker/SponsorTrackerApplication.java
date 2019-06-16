@@ -1,13 +1,13 @@
-package com.limdale.sponsorpls;
+package com.limdale.sponsortracker;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class SponsorPlsApplication {
+public class SponsorTrackerApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(SponsorPlsApplication.class, args);
+		SpringApplication.run(SponsorTrackerApplication.class, args);
 	}
 
 }
