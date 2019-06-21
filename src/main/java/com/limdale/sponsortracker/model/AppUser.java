@@ -1,6 +1,8 @@
 package com.limdale.sponsortracker.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
@@ -9,6 +11,7 @@ import javax.persistence.*;
 @Getter
 @Setter
 @Table(name = "app_user")
+@NoArgsConstructor
 public class AppUser {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -16,5 +19,11 @@ public class AppUser {
 
     private String username;
 
+    @JsonIgnore
     private String password;
+
+    public AppUser(String username, String password) {
+        this.username = username;
+        this.password = password;
+    }
 }
