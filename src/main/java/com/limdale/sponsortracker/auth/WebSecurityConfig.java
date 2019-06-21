@@ -3,17 +3,14 @@ package com.limdale.sponsortracker.auth;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 
 // JWT Token auth inspired here:
 // https://auth0.com/blog/implementing-jwt-authentication-on-spring-boot/
@@ -27,6 +24,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http.csrf().disable()
                 .authorizeRequests()
                 .antMatchers(HttpMethod.GET, "/companies/**").permitAll()
+                .antMatchers(HttpMethod.POST, "/auth/**").permitAll()
                 .anyRequest().hasRole("ADMIN")
                 .and()
                 .addFilter(new JwtAuthenticationFilter(authenticationManager()))
@@ -37,19 +35,18 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     @Override
     public UserDetailsService userDetailsService() {
-        UserDetails user =
-                User.withUsername("user")
-                        .password(passwordEncoder().encode("password"))
-                        .roles("USER")
-                        .build();
+        return new DatabaseUserDetailsService();
+    }
 
-        UserDetails admin =
-                User.withUsername("admin")
-                        .password(passwordEncoder().encode("password"))
-                        .roles("ADMIN")
-                        .build();
-
-        return new InMemoryUserDetailsManager(user, admin);
+    // need this for authenticationManager to not be null
+    // when using a custom userDetailsService (idk why it becomes null, it doesn't happen when you use inmemory)
+    @Bean
+    public DaoAuthenticationProvider daoAuthenticationProvider() {
+        DaoAuthenticationProvider authProvider
+                = new DaoAuthenticationProvider();
+        authProvider.setUserDetailsService(userDetailsService());
+        authProvider.setPasswordEncoder(passwordEncoder());
+        return authProvider;
     }
 
     @Bean

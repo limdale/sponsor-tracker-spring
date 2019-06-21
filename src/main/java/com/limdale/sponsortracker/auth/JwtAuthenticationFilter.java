@@ -19,6 +19,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 
+// TODO just move the logic here to /auth/login in controller for more control
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
     private AuthenticationManager authenticationManager;
@@ -31,12 +32,11 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
         try {
             LoginRequest user = new ObjectMapper().readValue(request.getInputStream(), LoginRequest.class);
-            Authentication auth = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+            return authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                     user.getUsername(),
                     user.getPassword(),
                     new ArrayList<>()
             ));
-            return auth;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
