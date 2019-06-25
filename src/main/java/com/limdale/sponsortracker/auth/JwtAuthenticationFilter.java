@@ -20,6 +20,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 // TODO just move the logic here to /auth/login in controller for more control
+//move this to auth controller now
+//it's a big hassle to inject repository here, fetch user from repo by username, serialize, then put in jwt.
+//what happens rn is attemptAuthentication -> userDetailsService -> successfulAuthentication
+// ideally successfulAuthentication should receive an A-ppUser object so he can serialize the user object and add it to jwt
+// what we can do is db get the user in successfulAuthentication again, then serialize him
+// but that makes x2 db calls on login (one for userdetailsservice by spring framework, one called manually by us)
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
     private AuthenticationManager authenticationManager;

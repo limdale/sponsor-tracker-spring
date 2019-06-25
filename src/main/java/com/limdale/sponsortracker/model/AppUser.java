@@ -22,6 +22,9 @@ public class AppUser {
     @JsonIgnore
     private String password;
 
+    @Enumerated(EnumType.STRING)
+    private Role role;
+
     public AppUser(String username, String password) {
         this.username = username;
         this.password = password;
