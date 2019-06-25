@@ -1,14 +1,20 @@
 package com.limdale.sponsortracker.auth;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.limdale.sponsortracker.model.AppUser;
 import com.limdale.sponsortracker.model.LoginRequest;
+import com.limdale.sponsortracker.model.TokenResponse;
+import com.limdale.sponsortracker.repository.AppUserRepository;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import javax.crypto.SecretKey;
@@ -29,15 +35,19 @@ import java.util.ArrayList;
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
     private AuthenticationManager authenticationManager;
+    private AppUserRepository appUserRepository;
 
-    public JwtAuthenticationFilter(AuthenticationManager authenticationManager) {
+    private ObjectMapper mapper = new ObjectMapper();
+
+    public JwtAuthenticationFilter(AuthenticationManager authenticationManager, AppUserRepository appUserRepository) {
         this.authenticationManager = authenticationManager;
+        this.appUserRepository = appUserRepository;
     }
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
         try {
-            LoginRequest user = new ObjectMapper().readValue(request.getInputStream(), LoginRequest.class);
+            LoginRequest user = mapper.readValue(request.getInputStream(), LoginRequest.class);
             return authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                     user.getUsername(),
                     user.getPassword(),
@@ -51,14 +61,26 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
         if (authResult.isAuthenticated()) {
-            // TODO actual key
-            SecretKey key = Keys.hmacShaKeyFor("sponsortrackerrandomkeythatismorethan256bits".getBytes()); //or HS384 or HS512
-            String token = Jwts.builder()
-                    .setSubject(authResult.getName())
-                    .signWith(key)
-                    .compact();
+            AppUser user = appUserRepository.findByUsername(authResult.getName());
 
-            response.addHeader("Authorization", "Bearer " + token);
+            if (user != null) {
+                String jwt = createJwtFromUser(user);
+                String jsonResponse = mapper.writeValueAsString(new TokenResponse(user, jwt));
+                response.getWriter().write(jsonResponse);
+            } else {
+                throw new BadCredentialsException("Invalid username/password");
+            }
+        } else {
+            throw new BadCredentialsException("Invalid username/password");
         }
+    }
+
+    private String createJwtFromUser(AppUser user) throws IOException {
+        // TODO actual key
+        SecretKey key = Keys.hmacShaKeyFor("sponsortrackerrandomkeythatismorethan256bits".getBytes()); //or HS384 or HS512
+        return Jwts.builder()
+                .setSubject(mapper.writeValueAsString(user))
+                .signWith(key)
+                .compact();
     }
 }

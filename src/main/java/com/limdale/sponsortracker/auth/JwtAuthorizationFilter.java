@@ -1,9 +1,12 @@
 package com.limdale.sponsortracker.auth;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.limdale.sponsortracker.model.AppUser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
@@ -16,6 +19,9 @@ import java.io.IOException;
 import java.util.Collections;
 
 public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
+
+    private ObjectMapper mapper = new ObjectMapper();
+
     public JwtAuthorizationFilter(AuthenticationManager authenticationManager) {
         super(authenticationManager);
     }
@@ -42,14 +48,22 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
             String jwt = token.replace("Bearer ", "");
             // TODO actual key
             SecretKey key = Keys.hmacShaKeyFor("sponsortrackerrandomkeythatismorethan256bits".getBytes()); //or HS384 or HS512
-            String user = Jwts.parser()
+            String userJson = Jwts.parser()
                     .setSigningKey(key)
                     .parseClaimsJws(jwt)
                     .getBody()
                     .getSubject();
 
-            if (user != null) {
-                return new UsernamePasswordAuthenticationToken(user, null, Collections.emptyList());
+            try {
+                AppUser appUser = mapper.readValue(userJson, AppUser.class);
+
+                if (appUser != null) {
+                    return new UsernamePasswordAuthenticationToken(appUser.getUsername(), null,
+                            Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + appUser.getRole().name())));
+                }
+            } catch (IOException e) {
+                // log exception
+                return null;
             }
         }
 
