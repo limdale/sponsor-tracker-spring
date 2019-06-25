@@ -68,3 +68,7 @@ transaction-logs
 secrets.yml
 .gradletasknamecache
 .sts4-cache
+
+# App secrets
+*-secret.properties
+*-secret.yml

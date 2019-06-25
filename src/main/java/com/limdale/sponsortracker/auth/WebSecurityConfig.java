@@ -2,6 +2,7 @@ package com.limdale.sponsortracker.auth;
 
 import com.limdale.sponsortracker.repository.AppUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -24,6 +25,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private AppUserRepository appUserRepository;
 
+    @Value("${secret.jwt.key}")
+    private String secretKey;
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable()
@@ -32,8 +36,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.POST, "/auth/**").permitAll()
                 .anyRequest().hasRole("ADMIN")
                 .and()
-                .addFilter(new JwtAuthenticationFilter(authenticationManager(), appUserRepository))
-                .addFilter(new JwtAuthorizationFilter(authenticationManager()))
+                .addFilter(new JwtAuthenticationFilter(authenticationManager(), appUserRepository, secretKey))
+                .addFilter(new JwtAuthorizationFilter(authenticationManager(), secretKey))
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
     }
 

@@ -9,6 +9,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -16,6 +17,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import javax.servlet.FilterChain;
@@ -25,23 +27,20 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 
-// TODO just move the logic here to /auth/login in controller for more control
-//move this to auth controller now
-//it's a big hassle to inject repository here, fetch user from repo by username, serialize, then put in jwt.
-//what happens rn is attemptAuthentication -> userDetailsService -> successfulAuthentication
-// ideally successfulAuthentication should receive an A-ppUser object so he can serialize the user object and add it to jwt
-// what we can do is db get the user in successfulAuthentication again, then serialize him
-// but that makes x2 db calls on login (one for userdetailsservice by spring framework, one called manually by us)
+//when /login gets called, attemptAuthentication -> userDetailsService -> successfulAuthentication
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
     private AuthenticationManager authenticationManager;
     private AppUserRepository appUserRepository;
+    private String secretKey;
 
     private ObjectMapper mapper = new ObjectMapper();
 
-    public JwtAuthenticationFilter(AuthenticationManager authenticationManager, AppUserRepository appUserRepository) {
+    public JwtAuthenticationFilter(AuthenticationManager authenticationManager, AppUserRepository appUserRepository,
+                                   String jwtSecretKey) {
         this.authenticationManager = authenticationManager;
         this.appUserRepository = appUserRepository;
+        this.secretKey = jwtSecretKey;
     }
 
     @Override
@@ -76,8 +75,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     }
 
     private String createJwtFromUser(AppUser user) throws IOException {
-        // TODO actual key
-        SecretKey key = Keys.hmacShaKeyFor("sponsortrackerrandomkeythatismorethan256bits".getBytes()); //or HS384 or HS512
+        SecretKey key = Keys.hmacShaKeyFor(secretKey.getBytes()); //or HS384 or HS512
         return Jwts.builder()
                 .setSubject(mapper.writeValueAsString(user))
                 .signWith(key)

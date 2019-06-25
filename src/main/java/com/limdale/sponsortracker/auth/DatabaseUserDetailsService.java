@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.limdale.sponsortracker.utils.Constants.ROLE_PREFIX;
+
 @Service
 public class DatabaseUserDetailsService implements UserDetailsService {
 
@@ -26,7 +28,7 @@ public class DatabaseUserDetailsService implements UserDetailsService {
         AppUser user = userRepository.findByUsername(username);
         if (user != null) {
             List<GrantedAuthority> authorities = new ArrayList<>();
-            authorities.add(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
+            authorities.add(new SimpleGrantedAuthority(ROLE_PREFIX + user.getRole().name()));
             User springUser = new User(user.getUsername(), user.getPassword(), authorities);
 
             return springUser;

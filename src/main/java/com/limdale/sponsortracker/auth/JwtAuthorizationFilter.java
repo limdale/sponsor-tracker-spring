@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.limdale.sponsortracker.model.AppUser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -18,19 +19,26 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Collections;
 
+import static com.limdale.sponsortracker.utils.Constants.BEARER;
+import static com.limdale.sponsortracker.utils.Constants.HEADER_AUTHORIZATION;
+import static com.limdale.sponsortracker.utils.Constants.ROLE_PREFIX;
+
 public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
 
     private ObjectMapper mapper = new ObjectMapper();
 
-    public JwtAuthorizationFilter(AuthenticationManager authenticationManager) {
+    private String secretKey;
+
+    public JwtAuthorizationFilter(AuthenticationManager authenticationManager, String jwtSecretKey) {
         super(authenticationManager);
+        this.secretKey = jwtSecretKey;
     }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
-        String header = request.getHeader("Authorization");
+        String header = request.getHeader(HEADER_AUTHORIZATION);
 
-        if (header == null || !header.startsWith("Bearer ")) {
+        if (header == null || !header.startsWith(BEARER)) {
             chain.doFilter(request, response);
             return;
         }
@@ -42,12 +50,11 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
     }
 
     private UsernamePasswordAuthenticationToken getAuthenticationToken(HttpServletRequest request) {
-        String token = request.getHeader("Authorization");
+        String token = request.getHeader(HEADER_AUTHORIZATION);
 
         if (token != null) {
-            String jwt = token.replace("Bearer ", "");
-            // TODO actual key
-            SecretKey key = Keys.hmacShaKeyFor("sponsortrackerrandomkeythatismorethan256bits".getBytes()); //or HS384 or HS512
+            String jwt = token.replace(BEARER + " ", "");
+            SecretKey key = Keys.hmacShaKeyFor(secretKey.getBytes()); //or HS384 or HS512
             String userJson = Jwts.parser()
                     .setSigningKey(key)
                     .parseClaimsJws(jwt)
@@ -59,10 +66,10 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
 
                 if (appUser != null) {
                     return new UsernamePasswordAuthenticationToken(appUser.getUsername(), null,
-                            Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + appUser.getRole().name())));
+                            Collections.singletonList(new SimpleGrantedAuthority(ROLE_PREFIX + appUser.getRole().name())));
                 }
             } catch (IOException e) {
-                // log exception
+                // TODO log exception
                 return null;
             }
         }
