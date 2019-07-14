@@ -11,7 +11,6 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/companies")
-@CrossOrigin("http://localhost:3000")
 public class CompanyController {
     @Autowired
     private CompanyRepository companyRepository;
